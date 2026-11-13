@@ -1,0 +1,87 @@
+import 'package:flutter/material.dart';
+
+class PaymentScreen extends StatefulWidget {
+  const PaymentScreen({super.key});
+
+  @override
+  State<PaymentScreen> createState() => _PaymentScreenState();
+}
+
+class _PaymentScreenState extends State<PaymentScreen> {
+  final TextEditingController _transactionController = TextEditingController();
+  final String whatsappNumber = "+447312938165";
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('الدفع وتأكيد رقم عملية شام كاش 💳', style: TextStyle(color: Colors.white)),
+        backgroundColor: const Color(0xFF1E1E1E),
+        centerTitle: true,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: ListView(
+          children: [
+            const Text(
+              'خطوات الدفع عبر شام كاش:',
+              style: TextStyle(color: Colors.amber, fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              '1. قم بتحويل المبلغ المطلوبة عبر تطبيق شام كاش إلى الحساب المعتمد في المتجر.\n2. بعد إتمام التحويل، انسخ "رقم العملية" من الإيصال.\n3. الصق رقم العملية في الأسفل وأرسله لتأكيد الشحن فوراً.',
+              style: TextStyle(color: Colors.white70, fontSize: 14, height: 1.5),
+            ),
+            const SizedBox(height: 24),
+            // حقل إدخال رقم عملية شام كاش
+            TextField(
+              controller: _transactionController,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: 'أدخل رقم عملية شام كاش هنا',
+                labelStyle: const TextStyle(color: Colors.amber),
+                prefixIcon: const Icon(Icons.receipt_long, color: Colors.amber),
+                filled: true,
+                fillColor: const Color(0xFF1E1E1E),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+            const SizedBox(height: 20),
+            // زر إرسال رقم العملية عبر الواتساب لتأكيد الشحن
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: () {
+                String txnId = _transactionController.text.trim();
+                if (txnId.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('الرجاء إدخال رقم عملية شام كاش أولاً!')),
+                  );
+                } else {
+                  // هنا يتم إرسال رقم العملية عبر الواتساب للرقم المعتمد
+                  // رقم الواتساب: +447312938165
+                }
+              },
+              icon: const Icon(Icons.send),
+              label: const Text(
+                'تأكيد الشحن وإرسال رقم العملية للواتساب',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Center(
+              child: Text(
+                'الدعم الفني وتأكيد الطلبات: 447312938165+',
+                style: TextStyle(color: Colors.white54, fontSize: 13),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
