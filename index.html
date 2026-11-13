@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>متجر فخامة ستور - Fakhama Store</title>
+    <style>
+        :root {
+            --primary-green: #008751;
+            --dark-green: #004d2e;
+            --bg-light: #f4f6f8;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #777777;
+            --gold: #f0b90b;
+            --danger: #dc3545;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            padding-bottom: 80px;
+        }
+        .top-bar {
+            background-color: var(--primary-green);
+            color: white;
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+        .left-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .menu-icon {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+        .logo-circle {
+            width: 38px;
+            height: 38px;
+            background: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-green);
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+
+        /* نافذة تسجيل دخول المدير السرية */
+        .auth-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 3000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .auth-modal.active {
+            display: flex;
+        }
+        .auth-card {
+            background: white;
+            width: 100%;
+            max-width: 380px;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: right;
+        }
+        .form-group {
+            margin-bottom: 12px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        /* لوحة تحكم المدير (مخفية تماماً عن الزوار) */
+        .admin-panel {
+            display: none;
+            background: #fff3cd;
+            border: 2px solid var(--gold);
+            margin: 15px;
+            padding: 20px;
+            border-radius: 15px;
+        }
+        .admin-panel.active {
+            display: block;
+        }
+        .admin-panel h2 {
+            color: #856404;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        /* القائمة الجانبية للزوار */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -320px;
+            width: 320px;
+            height: 100%;
+            background: white;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.2);
+            z-index: 2000;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+        }
+        .sidebar.active {
+            right: 0;
+        }
+        .sidebar-header {
+            background: linear-gradient(135deg, var(--dark-green), var(--primary-green));
+            color: white;
+            padding: 20px 15px;
+            text-align: center;
+        }
+        .sidebar-avatar {
+            width: 55px;
+            height: 55px;
+            background: #fff;
+            border-radius: 50%;
+            margin: 0 auto 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: var(--primary-green);
+            font-weight: bold;
+            border: 2px solid var(--gold);
+        }
+        .sidebar-menu {
+            list-style: none;
+            padding: 10px 0;
+        }
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 0.95rem;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+        }
+        .sidebar-menu li a:hover {
+            background: #f4f6f8;
+            color: var(--primary-green);
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1500;
+            display: none;
+        }
+        .overlay.active {
+            display: block;
+        }
+
+        /* نافذة الشراء والتفاصيل */
+        .purchase-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 3000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .purchase-modal.active {
+            display: flex;
+        }
+        .purchase-card {
+            background: white;
+            width: 100%;
+            max-width: 400px;
+            padding: 25px;
+            border-radius: 20px;
+            text-align: center;
+        }
+        .purchase-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .price-tag-badge {
+            background: var(--dark-green);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        .purchase-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .purchase-field {
+            flex: 1;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 10px;
+            text-align: right;
+        }
+        .purchase-field input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-size: 1rem;
+            outline: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .user-id-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            text-align: right;
+            outline: none;
+            background: #f9f9f9;
+        }
+        .purchase-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-buy {
+            flex: 1;
+            background-color: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-cancel {
+            flex: 1;
+            background-color: white;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* نافذة إضافة رصيد شام كاش */
+        .deposit-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 3000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .deposit-modal.active {
+            display: flex;
+        }
+        .deposit-card {
+            background: white;
+            width: 100%;
+            max-width: 380px;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: right;
+        }
+
+        /* شبكة المنتجات */
+        .section-title {
+            padding: 0 15px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--dark-green);
+        }
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            padding: 0 15px;
+            margin-bottom: 25px;
+        }
+        .product-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px 10px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid #eee;
+            cursor: pointer;
+            position: relative;
+        }
+        .product-card h4 {
+            font-size: 0.95rem;
+            color: var(--text-main);
+            margin-bottom: 5px;
+        }
+        .product-card p {
+            font-size: 0.85rem;
+            color: var(--primary-green);
+            font-weight: bold;
+        }
+        .admin-actions {
+            display: none;
+            margin-top: 8px;
+            gap: 5px;
+            justify-content: center;
+        }
+        .admin-mode .admin-actions {
+            display: flex;
+        }
+        .btn-edit { background: #ffc107; border: none; padding: 3px 8px; border-radius: 5px; font-size: 0.75rem; cursor: pointer; font-weight: bold; }
+        .btn-del { background: var(--danger); color: white; border: none; padding: 3px 8px; border-radius: 5px; font-size: 0.75rem; cursor: pointer; }
+
+        /* شريط التنقل السفلي */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .nav-item {
+            text-align: center;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+        .nav-item.active {
+            color: var(--primary-green);
+            font-weight: bold;
+        }
+        .nav-item div {
+            font-size: 1.2rem;
+            margin-bottom: 2px;
+        }
+    </style>
+</head>
+<body id="bodyTag">
+
+    <!-- الشريط العلوي (زر دخول المدير مخفي تماماً عن الزوار، ويتم فتحه بالضغط 3 مرات على اللوجو) -->
+    <div class="top-bar">
+        <div class="left-header">
+            <button class="menu-icon" onclick="toggleSidebar()">☰</button>
+        </div>
+        <div class="logo-area" onclick="handleSecretAdminAccess()">
+            <span>فخامة ستور</span>
+            <div class="logo-circle">ف</div>
+        </div>
+    </div>
+
+    <!-- نافذة تسجيل دخول المدير السرية -->
+    <div class="auth-modal" id="authModal">
+        <div class="auth-card">
+            <h3 style="color: var(--primary-green); margin-bottom: 15px;">🔐 تسجيل دخول المدير السري</h3>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>البريد الإلكتروني:</label>
+                    <input type="email" id="loginEmail" placeholder="fkdbbjdjj@gmail.com" required>
+                </div>
+                <div class="form-group">
+                    <label>كلمة المرور:</label>
+                    <input type="password" id="loginPass" placeholder="0980360257" required>
+                </div>
+                <button type="submit" class="btn-buy" style="width: 100%; margin-top: 10px;">دخول لوحة التحكم</button>
+                <button type="button" class="btn-cancel" style="width: 100%; margin-top: 8px;" onclick="closeAuthModal()">إلغاء</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- لوحة تحكم المدير (تظهر لك وحدك بعد إدخال الإيميل وكلمة السر) -->
+    <div class="admin-panel" id="adminPanel">
+        <h2>👑 لوحة تحكم المدير العام (تعديل وإضافة)</h2>
+        <div class="form-group">
+            <label>اسم المنتج أو اللعبة:</label>
+            <input type="text" id="admName" placeholder="مثال: شدات ببجي 60">
+        </div>
+        <div class="form-group">
+            <label>السعر الأساسي ($):</label>
+            <input type="number" step="0.001" id="admPrice" placeholder="1.00">
+        </div>
+        <button class="btn-buy" style="width: 100%; margin-top: 5px;" onclick="saveProduct()">➕ إضافة أو حفظ المنتج</button>
+        <button class="btn-cancel" style="width: 100%; margin-top: 8px; background: #333; color: white; border: none;" onclick="toggleAdminEditMode()">🔧 تفعيل/إلغاء أزرار التعديل والحذف</button>
+    </div>
+
+    <!-- القائمة الجانبية للزوار (تظهر بياناتك الخاصة حصرياً لك بعد تسجيل الدخول، وللناس تظهر كقائمة زائر عادية) -->
+    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header" id="sidebarHeader">
+            <div class="sidebar-avatar">👤</div>
+            <div style="font-size: 0.95rem; font-weight: bold;">زائر كريم</div>
+            <div style="font-size: 0.8rem; color: #ddd; margin-top: 3px;">متجر فخامة ستور الرقمي</div>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#" onclick="toggleSidebar()"><span>🏠</span> الرئيسية</a></li>
+            <li><a href="#" onclick="openDepositModal(); toggleSidebar();"><span>💳</span> إضافة رصيد عبر شام كاش</a></li>
+            <li><a href="#" onclick="alert('سجل المشتريات فارغ حالياً')"><span>🛒</span> مشترياتي والطلبات</a></li>
+            <li><a href="https://t.me/" target="_blank"><span>✈️</span> حساب تلغرام</a></li>
+            <li><a href="#" onclick="alert('الدعم الفني عبر الواتساب: +447312938165')"><span>🤝</span> الدعم الفني</a></li>
+            <li><a href="#" onclick="alert('المتجر محمي بالكامل')"><span>🛡️</span> الحماية والأمان</a></li>
+        </ul>
+    </div>
+
+    <!-- نافذة الشراء والتفاصيل -->
+    <div class="purchase-modal" id="purchaseModal">
+        <div class="purchase-card">
+            <div class="purchase-header">
+                <h3 id="modalProdName">اسم المنتج</h3>
+                <div class="price-tag-badge" id="modalBasePrice">$0.00</div>
+            </div>
+            <div class="purchase-row">
+                <div class="purchase-field">
+                    <label style="font-size:0.75rem; color:var(--text-muted)">الإجمالي</label>
+                    <input type="text" id="totalPrice" value="$0.00" readonly>
+                </div>
+                <div class="purchase-field" style="border: 2px solid var(--primary-green);">
+                    <label style="font-size:0.75rem; color:var(--text-muted)">العدد / الكمية</label>
+                    <input type="number" id="prodQuantity" value="1" min="1" oninput="calculateTotal()">
+                </div>
+            </div>
+            <input type="text" class="user-id-input" id="userIdInput" placeholder="USER ID / الآيدي المطلوب شحنه" required>
+            <div class="purchase-actions">
+                <button class="btn-cancel" onclick="closePurchaseModal()">إلغاء</button>
+                <button class="btn-buy" onclick="submitPurchase()">شراء 🟢</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة إضافة رصيد شام كاش -->
+    <div class="deposit-modal" id="depositModal">
+        <div class="deposit-card">
+            <h3 style="color: var(--primary-green); margin-bottom: 15px;">💳 إضافة رصيد عبر شام كاش</h3>
+            <div class="form-group">
+                <label>المبلغ المراد إضافته ($):</label>
+                <input type="number" id="depositAmount" placeholder="مثال: 10">
+            </div>
+            <div class="form-group">
+                <label>رقم عملية تحويل شام كاش:</label>
+                <input type="text" id="depositOpId" placeholder="أدخل رقم العملية الحقيقي">
+            </div>
+            <button class="btn-buy" style="width: 100%; background: #25d366; margin-top: 10px;" onclick="submitDeposit()">إرسال طلب الشحن للواتساب</button>
+            <button class="btn-cancel" style="width: 100%; margin-top: 8px;" onclick="closeDepositModal()">إلغاء</button>
+        </div>
+    </div>
+
+    <!-- بانر -->
+    <div style="padding: 15px;">
+        <div style="background: linear-gradient(135deg, #004d2e, #008751); border-radius: 15px; padding: 20px; text-align: center; color: white;">
+            <h2>🚀 متجر فخامة ستور الرقمي</h2>
+            <p>اختر منتجك، حدد الكمية، واشحن فوراً عبر شام كاش</p>
+        </div>
+    </div>
+
+    <!-- شبكة المنتجات -->
+    <div class="section-title">🎮 الأقسام والمنتجات المتاحة</div>
+    <div class="products-grid" id="productsGrid"></div>
+
+    <!-- شريط التنقل السفلي (بدون أي أزرار مزعجة للناس) -->
+    <div class="bottom-nav">
+        <div class="nav-item" onclick="toggleSidebar()"><div>💳</div>المحفظة</div>
+        <div class="nav-item" onclick="alert('مشترياتك فارغة')"><div>🛒</div>مشترياتي</div>
+        <div class="nav-item active" onclick="window.scrollTo({top: 0, behavior: 'smooth'});"><div>🏠</div>الرئيسية</div>
+        <div class="nav-item" onclick="toggleSidebar()"><div>☰</div>القائمة</div>
+    </div>
+
+    <script>
+        let products = [
+            { name: "تـاكا شات - Taka Chat", price: 1.027 },
+            { name: "شدات ببجي موبايل", price: 0.990 },
+            { name: "جواهر فري فاير", price: 0.850 },
+            { name: "بينمو شات 36800", price: 5.000 }
+        ];
+
+        let currentSelectedProduct = null;
+        let editingIndex = -1;
+        let isAdminLoggedIn = false;
+        let logoClicks = 0;
+
+        function renderProducts() {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = '';
+            products.forEach((prod, index) => {
+                grid.innerHTML += `
+                    <div class="product-card" onclick="openPurchaseModal(${index})">
+                        <h4>🎮 ${prod.name}</h4>
+                        <p>$ ${prod.price.toFixed(3)}</p>
+                        <div class="admin-actions">
+                            <button class="btn-edit" onclick="event.stopPropagation(); editProduct(${index})">تعديل</button>
+                            <button class="btn-del" onclick="event.stopPropagation(); deleteProduct(${index})">حذف</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // طريقة سرية لفتح تسجيل دخول المدير عبر الضغط 3 مرات على لوجو المتجر
+        function handleSecretAdminAccess() {
+            logoClicks++;
+            if(logoClicks >= 3) {
+                logoClicks = 0;
+                if(!isAdminLoggedIn) {
+                    document.getElementById('authModal').classList.add('active');
+                } else {
+                    alert('أنت مسجل دخول كمدير بالفعل!');
+                }
+            }
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.remove('active');
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const pass = document.getElementById('loginPass').value;
+
+            if(email === 'fkdbbjdjj@gmail.com' && pass === '0980360257') {
+                isAdminLoggedIn = true;
+                alert('مرحباً بك يا مدير النظام، تم تسجيل الدخول بنجاح!');
+                
+                // ظهور معلومات حسابك الملكي في القائمة الجانبية وحدك
+                document.getElementById('sidebarHeader').innerHTML = `
+                    <div class="sidebar-avatar">👑</div>
+                    <div style="font-size: 0.95rem; font-weight: bold;">{ AHMAD } #1295</div>
+                    <div style="background: var(--gold); color: #000; padding: 2px 10px; border-radius: 10px; font-size: 0.75rem; font-weight: bold; display: inline-block; margin-top: 5px;">⭐ Vip مواقع</div>
+                    <div style="font-size: 1.1rem; font-weight: bold; color: var(--gold); margin-top: 5px;">$ 0.001</div>
+                `;
+                
+                document.getElementById('adminPanel').classList.add('active');
+                closeAuthModal();
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            } else {
+                alert('خطأ في البريد الإلكتروني أو كلمة المرور!');
+            }
+        }
+
+        function saveProduct() {
+            const name = document.getElementById('admName').value;
+            const price = parseFloat(document.getElementById('admPrice').value);
+
+            if(!name || isNaN(price)) {
+                alert('يرجى إدخال اسم المنتج والسعر بشكل صحيح!');
+                return;
+            }
+
+            if(editingIndex === -1) {
+                products.push({ name, price });
+                alert('تم إضافة المنتج بنجاح!');
+            } else {
+                products[editingIndex] = { name, price };
+                alert('تم تعديل المنتج بنجاح!');
+                editingIndex = -1;
+            }
+
+            document.getElementById('admName').value = '';
+            document.getElementById('admPrice').value = '';
+            renderProducts();
+        }
+
+        function editProduct(index) {
+            if(!isAdminLoggedIn) return;
+            editingIndex = index;
+            document.getElementById('admName').value = products[index].name;
+            document.getElementById('admPrice').value = products[index].price;
+            document.getElementById('adminPanel').classList.add('active');
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        function deleteProduct(index) {
+            if(!isAdminLoggedIn) return;
+            if(confirm('هل أنت متأكد من حذف هذا المنتج؟')) {
+                products.splice(index, 1);
+                renderProducts();
+            }
+        }
+
+        function toggleAdminEditMode() {
+            document.getElementById('bodyTag').classList.toggle('admin-mode');
+        }
+
+        function openPurchaseModal(index) {
+            currentSelectedProduct = products[index];
+            document.getElementById('modalProdName').innerText = currentSelectedProduct.name;
+            document.getElementById('modalBasePrice').innerText = `$ ${currentSelectedProduct.price.toFixed(3)}`;
+            document.getElementById('prodQuantity').value = 1;
+            document.getElementById('userIdInput').value = '';
+            calculateTotal();
+            document.getElementById('purchaseModal').classList.add('active');
+        }
+
+        function calculateTotal() {
+            const qty = parseInt(document.getElementById('prodQuantity').value) || 1;
+            const total = qty * currentSelectedProduct.price;
+            document.getElementById('totalPrice').value = `$ ${total.toFixed(3)}`;
+        }
+
+        function closePurchaseModal() {
+            document.getElementById('purchaseModal').classList.remove('active');
+        }
+
+        function submitPurchase() {
+            const qty = document.getElementById('prodQuantity').value;
+            const userId = document.getElementById('userIdInput').value;
+            const total = document.getElementById('totalPrice').value;
+
+            if(!userId) {
+                alert('يرجى إدخال USER ID / الآيدي المطلوب شحنه!');
+                return;
+            }
+
+            const message = `مرحباً متجر فخامة ستور، أريد شراء:%0a- المنتج: ${currentSelectedProduct.name}%0a- الكمية: ${qty}%0a- الإجمالي: ${total}%0a- الآيدي: ${userId}`;
+            window.location.href = `https://wa.me/447312938165?text=${message}`;
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        function openDepositModal() {
+            document.getElementById('depositModal').classList.add('active');
+        }
+
+        function closeDepositModal() {
+            document.getElementById('depositModal').classList.remove('active');
+        }
+
+        function submitDeposit() {
+            const amount = document.getElementById('depositAmount').value;
+            const opId = document.getElementById('depositOpId').value;
+            if(!amount || !opId) {
+                alert('يرجى إدخال المبلغ ورقم العملية!');
+                return;
+            }
+            const message = `مرحباً متجر فخامة ستور، أطلب إضافة رصيد للمحفظة:%0a- المبلغ: $${amount}%0a- رقم عملية شام كاش: ${opId}`;
+            window.location.href = `https://wa.me/447312938165?text=${message}`;
+        }
+
+        renderProducts();
+    </script>
+
+</body>
+</html>
