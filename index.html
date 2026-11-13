@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>متجر فخامة ستور - Fakhama Store</title>
+    <style>
+        :root {
+            --primary-green: #008751;
+            --dark-green: #004d2e;
+            --bg-light: #f4f6f8;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #777777;
+            --gold: #f0b90b;
+            --danger: #dc3545;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            padding-bottom: 80px;
+        }
+        .top-bar {
+            background-color: var(--primary-green);
+            color: white;
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+        .left-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .menu-icon, .auth-top-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .logo-circle {
+            width: 38px;
+            height: 38px;
+            background: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-green);
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+
+        /* القائمة الجانبية (Sidebar) مع تفاصيل المحفظة والمشتريات */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -320px;
+            width: 320px;
+            height: 100%;
+            background: white;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.2);
+            z-index: 2000;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+        }
+        .sidebar.active {
+            right: 0;
+        }
+        .sidebar-header {
+            background: linear-gradient(135deg, var(--dark-green), var(--primary-green));
+            color: white;
+            padding: 20px 15px;
+            text-align: center;
+        }
+        .sidebar-avatar {
+            width: 55px;
+            height: 55px;
+            background: #fff;
+            border-radius: 50%;
+            margin: 0 auto 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: var(--primary-green);
+            font-weight: bold;
+            border: 2px solid var(--gold);
+        }
+        .sidebar-menu {
+            list-style: none;
+            padding: 10px 0;
+        }
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 0.95rem;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+        }
+        .sidebar-menu li a:hover {
+            background: #f4f6f8;
+            color: var(--primary-green);
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1500;
+            display: none;
+        }
+        .overlay.active {
+            display: block;
+        }
+
+        /* نافذة الشراء المنبثقة (مطابقة لصورة تاكا شات) */
+        .purchase-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 3000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .purchase-modal.active {
+            display: flex;
+        }
+        .purchase-card {
+            background: white;
+            width: 100%;
+            max-width: 420px;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            text-align: center;
+            position: relative;
+        }
+        .purchase-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .purchase-header h3 {
+            font-size: 1.1rem;
+            color: var(--text-main);
+        }
+        .price-tag-badge {
+            background: var(--dark-green);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        .purchase-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .purchase-field {
+            flex: 1;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 10px;
+            text-align: right;
+        }
+        .purchase-field label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 3px;
+        }
+        .purchase-field input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-size: 1rem;
+            outline: none;
+            font-weight: bold;
+            color: var(--text-main);
+            text-align: center;
+        }
+        .user-id-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            text-align: right;
+            outline: none;
+            background: #f9f9f9;
+        }
+        .purchase-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-buy {
+            flex: 1;
+            background-color: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .btn-cancel {
+            flex: 1;
+            background-color: white;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        /* نافذة إضافة رصيد شام كاش */
+        .deposit-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 3000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .deposit-modal.active {
+            display: flex;
+        }
+        .deposit-card {
+            background: white;
+            width: 100%;
+            max-width: 400px;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: right;
+        }
+
+        /* شبكة المنتجات */
+        .section-title {
+            padding: 0 15px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--dark-green);
+        }
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            padding: 0 15px;
+            margin-bottom: 25px;
+        }
+        .product-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px 10px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid #eee;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .product-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary-green);
+        }
+        .product-card h4 {
+            font-size: 0.95rem;
+            color: var(--text-main);
+            margin-bottom: 5px;
+        }
+        .product-card p {
+            font-size: 0.85rem;
+            color: var(--primary-green);
+            font-weight: bold;
+        }
+
+        /* لوحة تحكم المدير */
+        .admin-panel {
+            display: none;
+            background: #fff3cd;
+            border: 2px solid var(--gold);
+            margin: 15px;
+            padding: 20px;
+            border-radius: 15px;
+        }
+        .admin-panel.active {
+            display: block;
+        }
+        .admin-form-group {
+            margin-bottom: 10px;
+        }
+        .admin-form-group input {
+            width: 100%;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        .admin-btn {
+            background: var(--dark-green);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        /* شريط التنقل السفلي */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .nav-item {
+            text-align: center;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+        .nav-item.active {
+            color: var(--primary-green);
+            font-weight: bold;
+        }
+        .nav-item div {
+            font-size: 1.2rem;
+            margin-bottom: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- الشريط العلوي -->
+    <div class="top-bar">
+        <div class="left-header">
+            <button class="auth-top-btn" onclick="openAdminModal()">دخول المدير</button>
+            <button class="menu-icon" onclick="toggleSidebar()">☰</button>
+        </div>
+        <div class="logo-area">
+            <span>فخامة ستور</span>
+            <div class="logo-circle">ف</div>
+        </div>
+    </div>
+
+    <!-- لوحة تحكم المدير (تعديل وإضافة منتجات) -->
+    <div class="admin-panel" id="adminPanel">
+        <h2>👑 لوحة تحكم المدير العام</h2>
+        <div class="admin-form-group" style="margin-top: 10px;">
+            <input type="text" id="admName" placeholder="اسم المنتج الجديد (مثال: ببجي 60 شدة)">
+        </div>
+        <div class="admin-form-group">
+            <input type="number" id="admPrice" placeholder="السعر الأساسي بالدولار (مثال: 1.00)">
+        </div>
+        <button class="admin-btn" onclick="addProduct()">➕ إضافة المنتج للمتجر</button>
+    </div>
+
+    <!-- القائمة الجانبية (المحفظة، المشتريات، وإضافة رصيد) -->
+    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-avatar">💰</div>
+            <div style="font-size: 0.9rem; font-weight: bold;">المحفظة والمشتريات</div>
+            <div style="font-size: 1.1rem; font-weight: bold; color: var(--gold); margin-top: 5px;" id="walletBalance">$ 0.000</div>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#" onclick="toggleSidebar()"><span>🏠</span> الرئيسية</a></li>
+            <li><a href="#" onclick="openDepositModal(); toggleSidebar();"><span>💳</span> إضافة رصيد عبر شام كاش</a></li>
+            <li><a href="#" onclick="alert('عدد المشتريات: 0 طلب')"><span>🛒</span> مشترياتي والطلبات</a></li>
+            <li><a href="#" onclick="alert('رصيدك الحالي في المحفظة: $0.000')"><span>💰</span> رصيد المحفظة</a></li>
+            <li><a href="https://t.me/" target="_blank"><span>✈️</span> حساب تلغرام</a></li>
+            <li><a href="#" onclick="alert('الدعم الفني عبر الواتساب: +447312938165')"><span>🤝</span> الدعم الفني</a></li>
+            <li><a href="#" onclick="alert('المتجر محمي بالكامل')"><span>🛡️</span> الحماية والأمان</a></li>
+        </ul>
+    </div>
+
+    <!-- نافذة الشراء التفاعلية (مطابقة لصورة تاكا شات) -->
+    <div class="purchase-modal" id="purchaseModal">
+        <div class="purchase-card">
+            <div class="purchase-header">
+                <h3 id="modalProdName">اسم المنتج</h3>
+                <div class="price-tag-badge" id="modalBasePrice">$0.00</div>
+            </div>
+            <div class="purchase-row">
+                <div class="purchase-field">
+                    <label>الإجمالي</label>
+                    <input type="text" id="totalPrice" value="$0.00" readonly>
+                </div>
+                <div class="purchase-field" style="border: 2px solid var(--primary-green);">
+                    <label>العدد / الكمية</label>
+                    <input type="number" id="prodQuantity" value="1" min="1" oninput="calculateTotal()">
+                </div>
+            </div>
+            <input type="text" class="user-id-input" id="userIdInput" placeholder="USER ID / الآيدي المطلوب شحنه" required>
+            <div class="purchase-actions">
+                <button class="btn-cancel" onclick="closePurchaseModal()">إلغاء</button>
+                <button class="btn-buy" onclick="submitPurchase()">شراء 🟢</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة إضافة رصيد عبر شام كاش -->
+    <div class="deposit-modal" id="depositModal">
+        <div class="deposit-card">
+            <h3 style="color: var(--primary-green); margin-bottom: 15px;">💳 إضافة رصيد عبر شام كاش</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">قم بالتحويل عبر شام كاش إلى حسابنا، ثم أدخل رقم العملية أدناه ليتم شحن محفظتك.</p>
+            <div class="admin-form-group">
+                <label style="font-size: 0.8rem; font-weight: bold;">المبلغ المراد إضافته ($):</label>
+                <input type="number" id="depositAmount" placeholder="مثال: 10">
+            </div>
+            <div class="admin-form-group">
+                <label style="font-size: 0.8rem; font-weight: bold;">رقم عملية تحويل شام كاش:</label>
+                <input type="text" id="depositOpId" placeholder="أدخل رقم العملية الحقيقي">
+            </div>
+            <button class="admin-btn" style="background: #25d366; margin-top: 10px;" onclick="submitDeposit()">إرسال طلب شحن الرصيد للواتساب</button>
+            <button class="admin-btn" style="background: #dc3545; margin-top: 8px;" onclick="closeDepositModal()">إلغاء</button>
+        </div>
+    </div>
+
+    <!-- بانر -->
+    <div class="banner-container" style="padding: 15px;">
+        <div class="banner" style="background: linear-gradient(135deg, #004d2e, #008751); border-radius: 15px; padding: 20px; text-align: center; color: white;">
+            <h2>🚀 متجر فخامة ستور الرقمي</h2>
+            <p>اختر منتجك، حدد الكمية، واشحن فوراً عبر شام كاش</p>
+        </div>
+    </div>
+
+    <!-- عرض المنتجات -->
+    <div class="section-title">🎮 الأقسام والمنتجات المتاحة</div>
+    <div class="products-grid" id="productsGrid">
+        <!-- يتم تعبئتها ديناميكياً -->
+    </div>
+
+    <!-- شريط التنقل السفلي -->
+    <div class="bottom-nav">
+        <div class="nav-item" onclick="toggleSidebar()"><div>💳</div>المحفظة</div>
+        <div class="nav-item" onclick="alert('عدد مشترياتك: 0')"><div>🛒</div>مشترياتي</div>
+        <div class="nav-item active" onclick="window.scrollTo({top: 0, behavior: 'smooth'});"><div>🏠</div>الرئيسية</div>
+        <div class="nav-item" onclick="openAdminModal()"><div>👑</div>المدير</div>
+        <div class="nav-item" onclick="toggleSidebar()"><div>☰</div>القائمة</div>
+    </div>
+
+    <script>
+        // قائمة المنتجات الافتراضية مع الأسعار
+        let products = [
+            { name: "تـاكا شات - Taka Chat", price: 1.027 },
+            { name: "شدات ببجي موبايل", price: 0.990 },
+            { name: "جواهر فري فاير", price: 0.850 },
+            { name: "بينمو شات 36800", price: 5.000 },
+            { name: "اشتراك VIP شهري", price: 2.500 },
+            { name: "رصيد رقمي ترحيبي", price: 1.000 }
+        ];
+
+        let currentSelectedProduct = null;
+
+        function renderProducts() {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = '';
+            products.forEach((prod, index) => {
+                grid.innerHTML += `
+                    <div class="product-card" onclick="openPurchaseModal('${prod.name}', ${prod.price})">
+                        <h4>🎮 ${prod.name}</h4>
+                        <p>$ ${prod.price.toFixed(3)}</p>
+                    </div>
+                `;
+            });
+        }
+
+        function openPurchaseModal(name, price) {
+            currentSelectedProduct = { name, price };
+            document.getElementById('modalProdName').innerText = name;
+            document.getElementById('modalBasePrice').innerText = `$ ${price.toFixed(3)}`;
+            document.getElementById('prodQuantity').value = 1;
+            document.getElementById('userIdInput').value = '';
+            calculateTotal();
+            document.getElementById('purchaseModal').classList.add('active');
+        }
+
+        function calculateTotal() {
+            const qty = parseInt(document.getElementById('prodQuantity').value) || 1;
+            const total = qty * currentSelectedProduct.price;
+            document.getElementById('totalPrice').value = `$ ${total.toFixed(3)}`;
+        }
+
+        function closePurchaseModal() {
+            document.getElementById('purchaseModal').classList.remove('active');
+        }
+
+        function submitPurchase() {
+            const qty = document.getElementById('prodQuantity').value;
+            const userId = document.getElementById('userIdInput').value;
+            const total = document.getElementById('totalPrice').value;
+
+            if(!userId) {
+                alert('يرجى إدخال USER ID / الآيدي المطلوب شحنه!');
+                return;
+            }
+
+            const message = `مرحباً متجر فخامة ستور، أريد شراء:%0a- المنتج: ${currentSelectedProduct.name}%0a- الكمية: ${qty}%0a- الإجمالي: ${total}%0a- الآيدي: ${userId}`;
+            const whatsappUrl = `https://wa.me/447312938165?text=${message}`;
+            window.location.href = whatsappUrl;
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        function openDepositModal() {
+            document.getElementById('depositModal').classList.add('active');
+        }
+
+        function closeDepositModal() {
+            document.getElementById('depositModal').classList.remove('active');
+        }
+
+        function submitDeposit() {
+            const amount = document.getElementById('depositAmount').value;
+            const opId = document.getElementById('depositOpId').value;
+            if(!amount || !opId) {
+                alert('يرجى إدخال المبلغ ورقم عملية شام كاش!');
+                return;
+            }
+            const message = `مرحباً متجر فخامة ستور، أطلب إضافة رصيد إلى المحفظة:%0a- المبلغ: $${amount}%0a- رقم عملية شام كاش: ${opId}`;
+            window.location.href = `https://wa.me/447312938165?text=${message}`;
+        }
+
+        function openAdminModal() {
+            const pass = prompt("أدخل كلمة مرور المدير للتعديل:");
+            if(pass === "0980360257") {
+                document.getElementById('adminPanel').classList.toggle('active');
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            } else if(pass !== null) {
+                alert("كلمة المرور غير صحيحة!");
+            }
+        }
+
+        function addProduct() {
+            const name = document.getElementById('admName').value;
+            const price = parseFloat(document.getElementById('admPrice').value);
+            if(name && !isNaN(price)) {
+                products.push({ name, price });
+                renderProducts();
+                document.getElementById('admName').value = '';
+                document.getElementById('admPrice').value = '';
+                document.getElementById('adminPanel').classList.remove('active');
+                alert('تم إضافة المنتج بنجاح إلى واجهة المتجر!');
+            } else {
+                alert('يرجى أدخال اسم المنتج وسعر صحيح!');
+            }
+        }
+
+        // تشغيل عرض المنتجات عند التحميل
+        renderProducts();
+    </script>
+
+</body>
+</html>
